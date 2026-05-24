@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucho3D — Calculadora de Costos</title>
+    <meta name="description" content="Calculadora de costos de impresión 3D para Lucho3D.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ── Variables ──────────────────────────────────────────── */
+        :root {
+            --bg: #0a0a0a;
+            --bg1: #111111;
+            --bg2: #181818;
+            --bg3: #202020;
+            --naranja: #0026ff;
+            --naranja2: #0026ff;
+            --naranja-low: rgba(0, 174, 255, 0.08);
+            --naranja-mid: rgba(255, 106, 0, 0.18);
+            --verde: #00e676;
+            --texto: #f0ebe3;
+            --texto-2: #888070;
+            --texto-3: #504840;
+            --borde: rgba(255, 255, 255, 0.07);
+            --borde2: rgba(0, 81, 255, 0.856);
+            --font-d: "Syne", sans-serif;
+            --font-m: "Space Mono", monospace;
+            --trans: 0.2s ease;
+            --r: 8px;
+            --r2: 12px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-d);
+            background: var(--bg);
+            color: var(--texto);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Líneas de grid decorativas de fondo */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 106, 0, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 106, 0, 0.025) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Layout principal ────────────────────────────────────── */
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 16px 60px;
+        }
+
+        /* ── Header ─────────────────────────────────────────────── */
+        header {
+            padding: 32px 0 28px;
+            border-bottom: 1px solid var(--borde);
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--r);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .brand-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1;
+            color: var(--texto);
+        }
+
+        .brand-text p {
+            font-size: 0.7rem;
+            color: var(--naranja);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 3px;
+            font-family: var(--font-m);
+        }
+
+        .header-tag {
+            font-family: var(--font-m);
+            font-size: 0.65rem;
+            color: var(--texto-2);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: 1px solid var(--borde);
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        /* ── Columnas ────────────────────────────────────────────── */
+        .cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .col-left {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ── Bloque de sección ───────────────────────────────────── */
+        .bloque {
+            background: var(--bg1);
+            border: 1px solid var(--borde);
+            border-radius: var(--r2);
+            padding: 20px;
+        }
+
+        .bloque-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--borde);
+        }
+
+        .bloque-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--naranja-low);
+            border: 1px solid var(--borde2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .bloque-title h2 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--texto);
+        }
+
+        .bloque-title .num {
+            margin-left: auto;
+            font-family: var(--font-m);
+            font-size: 0.6rem;
+            color: var(--texto-3);
+            letter-spacing: 1px;
+        }
+
+        /* ── Campos ─────────────────────────────────────────────── */
+        .fields {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .field label {
+            font-size: 0.72rem;
+            color: var(--texto-2);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            background: var(--bg2);
+            border: 1px solid var(--borde);
+            border-radius: var(--r);
+            color: var(--texto);
+            font-family: var(--font-m);
+            font-size: 0.9rem;
+            padding: 9px 12px;
+            padding-right: 52px;
+            outline: none;
+            transition: border-color var(--trans), background var(--trans);
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .input-wrap input::-webkit-outer-spin-button,
+        .input-wrap input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .input-wrap input:focus {
+            border-color: var(--naranja2);
+            background: var(--bg3);
+        }
+
+        .input-wrap input:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .unit-tag {
+            position: absolute;
+            right: 10px;
+            font-family: var(--font-m);
+            font-size: 0.6rem;
+            color: var(--texto-3);
+            letter-spacing: 1px;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* ── Campos en grid 2 col ────────────────────────────────── */
+        .fields-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ── Botones de multiplicador ────────────────────────────── */
+        .mult-btns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .mbtn {
+            background: var(--bg2);
+            border: 1px solid var(--borde);
+            border-radius: var(--r);
+            color: var(--texto-2);
+            font-family: var(--font-m);
+            font-size: 0.72rem;
+            padding: 10px 6px;
+            cursor: pointer;
+            transition: var(--trans);
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .mbtn:hover {
+            border-color: rgba(255, 106, 0, 0.4);
+            color: var(--texto);
+        }
+
+        .mbtn.active {
+            background: var(--naranja-low);
+            border-color: var(--naranja2);
+            color: var(--naranja2);
+        }
+
+        .mbtn .mbtn-mult {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: inherit;
+        }
+
+        .mbtn .mbtn-label {
+            display: block;
+            font-size: 0.6rem;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
+        /* ── Dólar toggle ────────────────────────────────────────── */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .toggle-label {
+            font-size: 0.72rem;
+            color: var(--texto-2);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .toggle {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--bg3);
+            border: 1px solid var(--borde);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--trans);
+        }
+
+        .toggle-slider::before {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            left: 2px;
+            top: 2px;
+            background: var(--texto-2);
+            border-radius: 50%;
+            transition: var(--trans);
+        }
+
+        .toggle input:checked+.toggle-slider {
+            background: var(--naranja-mid);
+            border-color: var(--naranja2);
+        }
+
+        .toggle input:checked+.toggle-slider::before {
+            transform: translateX(16px);
+            background: var(--naranja2);
+        }
+
+        .dolar-field {
+            display: none;
+        }
+
+        .dolar-field.visible {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        /* ── Panel de resultado ──────────────────────────────────── */
+        .resultado {
+            background: var(--bg1);
+            border: 1px solid var(--borde2);
+            border-radius: var(--r2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .resultado-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--borde);
+        }
+
+        .resultado-header h2 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .dot-live {
+            width: 7px;
+            height: 7px;
+            background: var(--naranja2);
+            border-radius: 50%;
+            margin-left: auto;
+            box-shadow: 0 0 8px var(--naranja2);
+            animation: pulso 2s ease-in-out infinite;
+        }
+
+        @keyframes pulso {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.35;
+            }
+        }
+
+        /* Métricas intermedias */
+        .metricas {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .metrica {
+            background: var(--bg2);
+            border: 1px solid var(--borde);
+            border-radius: var(--r);
+            padding: 12px 14px;
+        }
+
+        .metrica .m-label {
+            font-size: 0.62rem;
+            color: var(--texto-2);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .metrica .m-val {
+            font-family: var(--font-m);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--texto);
+        }
+
+        /* Desglose */
+        .desglose {
+            background: var(--bg2);
+            border: 1px solid var(--borde);
+            border-radius: var(--r);
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .drow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 14px;
+            border-bottom: 1px solid var(--borde);
+            font-size: 0.8rem;
+        }
+
+        .drow:last-child {
+            border: none;
+        }
+
+        .drow .dl {
+            color: var(--texto-2);
+        }
+
+        .drow .dr {
+            font-family: var(--font-m);
+            font-size: 0.78rem;
+            color: var(--texto);
+        }
+
+        .drow.subtotal {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .drow.subtotal .dl {
+            color: var(--texto);
+            font-weight: 600;
+        }
+
+        /* Precio final */
+        .precio-final {
+            background: var(--naranja-low);
+            border: 1px solid var(--borde2);
+            border-radius: var(--r);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .precio-final .pf-label {
+            font-size: 0.72rem;
+            color: var(--naranja2);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .precio-final .pf-val {
+            font-family: var(--font-m);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--naranja2);
+            letter-spacing: -1px;
+        }
+
+        .precio-usd {
+            background: rgba(0, 230, 118, 0.06);
+            border: 1px solid rgba(0, 230, 118, 0.2);
+            border-radius: var(--r);
+            padding: 12px 16px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .precio-usd.visible {
+            display: flex;
+        }
+
+        .precio-usd .pu-label {
+            font-size: 0.68rem;
+            color: var(--verde);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .precio-usd .pu-val {
+            font-family: var(--font-m);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--verde);
+        }
+
+        /* ── Footer ─────────────────────────────────────────────── */
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--borde);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        footer p {
+            font-family: var(--font-m);
+            font-size: 0.62rem;
+            color: var(--texto-3);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        footer span {
+            font-family: var(--font-m);
+            font-size: 0.62rem;
+            color: var(--texto-3);
+            letter-spacing: 1px;
+        }
+
+        /* ── Responsive ─────────────────────────────────────────── */
+        @media (max-width: 640px) {
+            .cols {
+                grid-template-columns: 1fr;
+            }
+
+            .metricas {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .fields-2 {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .precio-final .pf-val {
+                font-size: 1.4rem;
+            }
+
+            .mult-btns {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 400px) {
+            .metricas {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- ── Header ─────────────────────────────────────────────── -->
+        <header>
+            <div class="brand">
+                <img src="/Logo.jpg" alt="Lucho3D" class="brand-icon">
+                <div class="brand-text">
+                    <h1>Lucho3D</h1>
+                    <p>Calculadora de costos</p>
+                </div>
+            </div>
+            <div class="header-tag">v1.0 · Tiempo real</div>
+        </header>
+
+        <div class="cols">
+            <div class="col-left">
+
+                <!-- ── Gastos fijos ──────────────────────────────────── -->
+                <div class="bloque">
+                    <div class="bloque-title">
+                        <div class="bloque-icon">⚙️</div>
+                        <h2>Gastos fijos</h2>
+                        <span class="num">01</span>
+                    </div>
+                    <div class="fields">
+                        <div class="field">
+                            <label>Precio del filamento</label>
+                            <div class="input-wrap">
+                                <input type="number" id="precio_fil" value="25000" min="0" step="100">
+                                <span class="unit-tag">$/kg</span>
+                            </div>
+                        </div>
+                        <div class="fields-2">
+                            <div class="field">
+                                <label>Precio kWh</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="precio_kwh" value="200" min="0" step="10">
+                                    <span class="unit-tag">$ARS</span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Consumo</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="consumo_w" value="200" min="0" step="10">
+                                    <span class="unit-tag">W</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fields-2">
+                            <div class="field">
+                                <label>Vida útil</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="vida_util" value="5000" min="1" step="100">
+                                    <span class="unit-tag">hs</span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Repuestos</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="repuestos" value="50000" min="0" step="1000">
+                                    <span class="unit-tag">$ARS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Margen de error</label>
+                            <div class="input-wrap">
+                                <input type="number" id="margen_error" value="10" min="0" max="100" step="1">
+                                <span class="unit-tag">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Pieza ─────────────────────────────────────────── -->
+                <div class="bloque">
+                    <div class="bloque-title">
+                        <div class="bloque-icon">🧱</div>
+                        <h2>Pieza</h2>
+                        <span class="num">02</span>
+                    </div>
+                    <div class="fields">
+                        <div class="fields-2">
+                            <div class="field">
+                                <label>Horas</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="horas" value="3" min="0" step="1">
+                                    <span class="unit-tag">hs</span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Minutos extra</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="minutos" value="30" min="0" max="59" step="1">
+                                    <span class="unit-tag">min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fields-2">
+                            <div class="field">
+                                <label>Filamento</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="gramos" value="80" min="0" step="1">
+                                    <span class="unit-tag">g</span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Insumos extra</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="insumos" value="0" min="0" step="100">
+                                    <span class="unit-tag">$ARS</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Ganancia ──────────────────────────────────────── -->
+                <div class="bloque">
+                    <div class="bloque-title">
+                        <div class="bloque-icon">📈</div>
+                        <h2>Ganancia</h2>
+                        <span class="num">03</span>
+                    </div>
+                    <div class="fields">
+                        <div class="field">
+                            <label>Multiplicador personalizado</label>
+                            <div class="input-wrap">
+                                <input type="number" id="margen_gan" value="4" min="1" max="20" step="0.1"
+                                    style="padding-right:12px;">
+                            </div>
+                        </div>
+                        <div class="mult-btns">
+                            <button class="mbtn" onclick="setMargen(3, this)">
+                                <span class="mbtn-mult">×3</span>
+                                <span class="mbtn-label">Mayorista</span>
+                            </button>
+                            <button class="mbtn active" onclick="setMargen(4, this)">
+                                <span class="mbtn-mult">×4</span>
+                                <span class="mbtn-label">Minorista</span>
+                            </button>
+                            <button class="mbtn" onclick="setMargen(5, this)">
+                                <span class="mbtn-mult">×5</span>
+                                <span class="mbtn-label">Llaveros</span>
+                            </button>
+                        </div>
+
+                        <!-- Toggle dólar -->
+                        <div style="margin-top:4px; padding-top:14px; border-top: 1px solid var(--borde);">
+                            <div class="toggle-row">
+                                <label class="toggle-label">Mostrar en dólares</label>
+                                <label class="toggle">
+                                    <input type="checkbox" id="toggle_dolar" onchange="toggleDolar()">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="dolar-field" id="dolar_field">
+                                <label class="field" style="display:flex;flex-direction:column;gap:5px;">
+                                    <span
+                                        style="font-size:.72rem;color:var(--texto-2);letter-spacing:1px;text-transform:uppercase;font-weight:600;">Cotización
+                                        del dólar</span>
+                                    <div class="input-wrap">
+                                        <input type="number" id="cotiz_dolar" value="1250" min="1" step="10">
+                                        <span class="unit-tag">$/USD</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /col-left -->
+
+            <div class="col-right">
+
+                <!-- ── Resultado ─────────────────────────────────────── -->
+                <div class="resultado">
+                    <div class="resultado-header">
+                        <div class="bloque-icon">🧮</div>
+                        <h2 style="font-size:.8rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;">
+                            Resultado</h2>
+                        <div class="dot-live"></div>
+                    </div>
+
+                    <!-- Métricas intermedias -->
+                    <div class="metricas">
+                        <div class="metrica">
+                            <div class="m-label">Filamento</div>
+                            <div class="m-val" id="r_fil">—</div>
+                        </div>
+                        <div class="metrica">
+                            <div class="m-label">Electricidad</div>
+                            <div class="m-val" id="r_elec">—</div>
+                        </div>
+                        <div class="metrica">
+                            <div class="m-label">Amortización</div>
+                            <div class="m-val" id="r_amort">—</div>
+                        </div>
+                        <div class="metrica">
+                            <div class="m-label">Tiempo total</div>
+                            <div class="m-val" id="r_tiempo">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Desglose -->
+                    <div class="desglose">
+                        <div class="drow">
+                            <span class="dl">Filamento + electricidad + amortización</span>
+                            <span class="dr" id="d_base">—</span>
+                        </div>
+                        <div class="drow">
+                            <span class="dl">Insumos extra</span>
+                            <span class="dr" id="d_ins">—</span>
+                        </div>
+                        <div class="drow subtotal">
+                            <span class="dl">Subtotal</span>
+                            <span class="dr" id="d_sub">—</span>
+                        </div>
+                        <div class="drow">
+                            <span class="dl">Margen de error</span>
+                            <span class="dr" id="d_err">—</span>
+                        </div>
+                        <div class="drow subtotal">
+                            <span class="dl">Costo total</span>
+                            <span class="dr" id="d_costo">—</span>
+                        </div>
+                        <div class="drow">
+                            <span class="dl">Multiplicador de ganancia</span>
+                            <span class="dr" id="d_mult">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Precio final ARS -->
+                    <div class="precio-final">
+                        <div>
+                            <div class="pf-label">Precio a cobrar</div>
+                            <div
+                                style="font-size:.65rem;color:var(--texto-2);margin-top:2px;font-family:var(--font-m);">
+                                $ pesos argentinos</div>
+                        </div>
+                        <div class="pf-val" id="r_final">—</div>
+                    </div>
+
+                    <!-- Precio USD (opcional) -->
+                    <div class="precio-usd" id="precio_usd">
+                        <div>
+                            <div class="pu-label">Precio en dólares</div>
+                            <div style="font-size:.62rem;color:rgba(0,230,118,0.5);margin-top:2px;font-family:var(--font-m);"
+                                id="d_cotiz_label">cotiz. $—/USD</div>
+                        </div>
+                        <div class="pu-val" id="r_usd">—</div>
+                    </div>
+
+                </div><!-- /resultado -->
+
+                <!-- ── Redes sociales ─────────────────────────────────────── -->
+                <div style="
+                    margin-top: 28px;
+                    background: var(--bg1);
+                    border: 1px solid var(--borde);
+                    border-radius: var(--r2);
+                    padding: 20px;">
+                <div style="
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    letter-spacing: 3px;
+                    text-transform: uppercase;
+                    color: var(--texto-2);
+                    margin-bottom: 14px;
+                    font-family: var(--font-d);">Encontrá a Luchoa3D en
+                </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="https://www.instagram.com/luchoa3d" target="_blank" rel="noopener" style="
+                        display: inline-flex; align-items: center; gap: 8px;
+                        padding: 10px 18px;
+                        background: #0026ff;
+                        border-radius: var(--r);
+                        color: #fff;
+                        font-family: var(--font-m);
+                        font-size: 0.72rem;
+                        letter-spacing: 1px;
+                        text-decoration: none;
+                        transition: var(--trans);" onmouseover="this.style.background='#1460c8'" onmouseout="this.style.background='#1877f2'">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                            </svg>
+                            Instagram
+                        </a>
+
+                        <a href="https://makerworld.com/es/@luchoa3D" target="_blank" rel="noopener" style="
+                        display: inline-flex; align-items: center; gap: 8px;
+                        padding: 10px 18px;
+                        background: #0026ff;
+                        border-radius: var(--r);
+                        color: #fff;
+                        font-family: var(--font-m);
+                        font-size: 0.72rem;
+                        letter-spacing: 1px;
+                        text-decoration: none;
+                        transition: var(--trans);" onmouseover="this.style.background='#1460c8'" onmouseout="this.style.background='#1877f2'">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4.5c4.142 0 7.5 3.358 7.5 7.5s-3.358 7.5-7.5 7.5S4.5 16.142 4.5 12 7.858 4.5 12 4.5zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zm0 2a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z" />
+                            </svg>
+                            MakerWorld
+                        </a>
+
+                        <a href="https://cults3d.com/es/usuarios/Luchoa3D/modelos-3d" target="_blank" rel="noopener"
+                            style="display: inline-flex; align-items: center; gap: 8px;
+                            padding: 10px 18px;
+                            background: #0026ff;
+                            border-radius: var(--r);
+                            color: #fff;
+                            font-family: var(--font-m);
+                            font-size: 0.72rem;
+                            letter-spacing: 1px;
+                            text-decoration: none;
+                            transition: var(--trans);" onmouseover="this.style.background='#1460c8'" onmouseout="this.style.background='#1877f2'">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                            </svg>
+                            Cults3D
+                        </a>
+                    </div>
+                </div>
+            </div><!-- /col-right -->
+        </div><!-- /cols -->
+
+        <footer>
+            <p>+bien · Soluciones digitales</p>
+            <span id="footer-year"></span>
+        </footer>
+
+    </div><!-- /app -->
+
+    <script>
+        document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+        function g(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+        function fmt(n) {
+            return '$\u00a0' + Math.round(n).toLocaleString('es-AR');
+        }
+        function fmtDec(n, d) {
+            return n.toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d });
+        }
+
+        function setMargen(val, btn) {
+            document.getElementById('margen_gan').value = val;
+            document.querySelectorAll('.mbtn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            calcular();
+        }
+
+        function toggleDolar() {
+            const on = document.getElementById('toggle_dolar').checked;
+            document.getElementById('dolar_field').classList.toggle('visible', on);
+            calcular();
+        }
+
+        function calcular() {
+            const precio_fil = g('precio_fil');
+            const precio_kwh = g('precio_kwh');
+            const consumo_w = g('consumo_w');
+            const vida_util = g('vida_util');
+            const repuestos = g('repuestos');
+            const margen_err = g('margen_error') / 100;
+            const horas = g('horas');
+            const minutos = g('minutos');
+            const gramos = g('gramos');
+            const insumos = g('insumos');
+            const margen_gan = g('margen_gan');
+            const cotiz = g('cotiz_dolar');
+            const dolar_on = document.getElementById('toggle_dolar').checked;
+
+            const tiempo = horas + (minutos / 60);
+            const t_label = horas + 'h ' + Math.round(minutos) + 'min';
+
+            const costo_fil = (gramos / 1000) * precio_fil;
+            const costo_elec = (consumo_w / 1000) * tiempo * precio_kwh;
+            const amort = vida_util > 0 ? (repuestos / vida_util) * tiempo : 0;
+            const base = costo_fil + costo_elec + amort;
+            const subtotal = base + insumos;
+            const err_monto = subtotal * margen_err;
+            const con_error = subtotal + err_monto;
+            const precio_final = con_error * margen_gan;
+
+            document.getElementById('r_fil').textContent = fmt(costo_fil);
+            document.getElementById('r_elec').textContent = fmt(costo_elec);
+            document.getElementById('r_amort').textContent = fmt(amort);
+            document.getElementById('r_tiempo').textContent = t_label;
+
+            document.getElementById('d_base').textContent = fmt(base);
+            document.getElementById('d_ins').textContent = fmt(insumos);
+            document.getElementById('d_sub').textContent = fmt(subtotal);
+            document.getElementById('d_err').textContent = '+' + g('margen_error') + '%  (' + fmt(err_monto) + ')';
+            document.getElementById('d_costo').textContent = fmt(con_error);
+            document.getElementById('d_mult').textContent = '×' + fmtDec(margen_gan, 1);
+            document.getElementById('r_final').textContent = fmt(precio_final);
+
+            const usdBox = document.getElementById('precio_usd');
+            if (dolar_on && cotiz > 0) {
+                const usd = precio_final / cotiz;
+                document.getElementById('r_usd').textContent = 'USD\u00a0' + fmtDec(usd, 2);
+                document.getElementById('d_cotiz_label').textContent = 'cotiz. $' + Math.round(cotiz).toLocaleString('es-AR') + '/USD';
+                usdBox.classList.add('visible');
+            } else {
+                usdBox.classList.remove('visible');
+            }
+
+            // Sincronizar botones de multiplicador
+            document.querySelectorAll('.mbtn').forEach(b => {
+                const v = parseFloat(b.querySelector('.mbtn-mult').textContent.replace('×', ''));
+                b.classList.toggle('active', v === margen_gan);
+            });
+        }
+
+        document.querySelectorAll('input[type="number"]').forEach(el => {
+            el.addEventListener('input', calcular);
+        });
+
+        calcular();
+    </script>
+</body>
+
+</html>
